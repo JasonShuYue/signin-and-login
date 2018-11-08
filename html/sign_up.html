@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .signUpForm {
+            border: 1px solid black;
+            border-radius: 5px;
+            box-shadow: 0 0  5px rgba(0, 0, 0, .8);
+            padding: 15px;
+        }
+        .row {
+            display: block;
+            padding: 8px;
+        }
+        .error {
+            display: block;
+            color: red;
+            font-size: 12px;
+        }
+        h1 {
+            text-align: center;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <form class="signUpForm" action="">
+        <h1>注册</h1>
+        <div class="row">
+            <label>
+                Email: <input type="text" name="email"/>
+                <span class="error"></span>
+            </label>
+        </div>
+
+        <div class="row">
+            <label>
+                密码: <input type="password" name="password"/>
+                <span class="error"></span>
+            </label>
+        </div>
+
+        <div class="row">
+            <label>
+                确认密码: <input type="password" name="password_confirmation"/>
+                <span class="error"></span>
+            </label>
+        </div>
+
+        <input type="submit" value="注册">
+    </form>
+    <script>
+        var $signUpForm = $(".signUpForm");
+        $signUpForm.on("submit", function(e) {
+            e.preventDefault();
+            var hash = {};
+            var need = ["email", "password", "password_confirmation"];
+            need.forEach((name) => {
+               let value = $signUpForm.find(`[name=${name}]`).val();
+               hash[name] = value;
+            });
+
+            // 如果没有填写数据，就在前端进行过滤。
+            var isNotEmpty = true;
+            for(let key in hash) {
+                if(hash[key] === "") {
+                    $('.error').text("");
+                    console.log($signUpForm.find(`[name=${key}]`))
+                    isNotEmpty = false;
+                    $signUpForm.find(`[name=${key}]`).siblings(".error")
+                        .text(`请填写${key}！`);
+                    break;
+                }
+            };
+
+            if(isNotEmpty) {
+                $('.error').text("");
+                $.post('/sign_up', hash)
+                    .then((response) => {
+                        window.location.href = "/login";
+                    }, (response) => {
+                        let {errors} = JSON.parse(response.responseText);
+                        $('.error').text('');   // 清除所有error提示
+                        if(errors && errors.email === "invalid") {
+                            $signUpForm.find(`[name=email]`).siblings(".error")
+                                .text("邮箱错误!")
+                        }
+                        if(errors && errors.email === "email in use") {
+                            console.log(1111)
+                            $signUpForm.find(`[name=email]`).siblings(".error")
+                                .text("邮箱已被注册!")
+                        }
+                        if(errors && errors.password === "password not match") {
+                            $signUpForm.find(`[name=password_confirmation]`).siblings(".error")
+                                .text("两次密码输入不一致!")
+                        }
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

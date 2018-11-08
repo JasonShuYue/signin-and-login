@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loginForm {
+            border: 1px solid black;
+            border-radius: 5px;
+            box-shadow: 0 0  5px rgba(0, 0, 0, .8);
+            padding: 15px;
+        }
+        .row {
+            display: block;
+            padding: 8px;
+        }
+        .error {
+            display: block;
+            color: red;
+            font-size: 12px;
+        }
+        h1 {
+            text-align: center;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <form class="loginForm" action="">
+        <h1>登录</h1>
+        <div class="row">
+            <label>
+                Email: <input type="text" name="email"/>
+                <span class="error"></span>
+            </label>
+        </div>
+
+        <div class="row">
+            <label>
+                密码: <input type="password" name="password"/>
+                <span class="error"></span>
+            </label>
+        </div>
+
+        <input type="submit" value="登录">
+        <input type="button" name="sign_up" value="注册">
+
+    </form>
+    <script>
+        var $loginForm = $('.loginForm');
+        $loginForm.on("submit", (e) => {
+            e.preventDefault();
+            var need = ["email", "password"];
+            var hash = {};
+            //  把input里的值放入一个hash中
+            need.forEach((key) => {
+                let value = $loginForm.find(`[name=${key}]`).val();
+                hash[key] = value;
+            });
+
+            //  前端过滤未填写时候的情况
+            var isNotEmpty = true;
+            for(let key in hash) {
+                if(hash[key] === "") {
+                    $loginForm.find('.error').text(""); // error全部置空
+                    $loginForm.find(`[name=${key}]`).siblings(".error").text(`请填写${key}！`);
+                    isNotEmpty = false;
+                    break;
+                }
+            }
+
+            if(isNotEmpty) {
+                $loginForm.find('.error').text(""); // error全部置空
+                $.post("/login", hash)
+                    .then(() => {
+                        window.location.href = "/";
+                    }, () => {
+                        $loginForm.find("[name=password]").siblings(".error")
+                            .text("邮箱或者密码错误！");
+                    });
+            }
+        });
+        $('[name=sign_up]').on("click", (e) => {
+            window.location.href = "/sign_up";
+        })
+    </script>
+</body>
+</html>
